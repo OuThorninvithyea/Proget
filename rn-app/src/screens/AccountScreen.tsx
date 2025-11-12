@@ -4,18 +4,30 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { MY_TICKETS } from '../data/tickets';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/RootNavigator';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function AccountScreen(): React.ReactElement {
 	const { theme, themeMode, setThemeMode, actualScheme } = useTheme();
+	const { language } = useLanguage();
+	const { user: authUser, logout } = useAuth();
 	const insets = useSafeAreaInsets();
+	const navigation = useNavigation<NavigationProp>();
 	const [showThemeModal, setShowThemeModal] = useState(false);
-	const [user] = useState({
+	
+	// Use authenticated user data or fallback
+	const user = authUser || {
 		name: 'Alex Johnson',
 		email: 'alex.johnson@example.com',
 		phone: '+1 (555) 123-4567',
 		memberSince: '2023',
 		avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop',
-	});
+	};
 
 	const stats = [
 		{ label: 'Tickets', value: MY_TICKETS.length.toString(), icon: 'ticket-outline' },
@@ -27,10 +39,10 @@ export default function AccountScreen(): React.ReactElement {
 		{
 			title: 'Account',
 			items: [
-				{ label: 'Profile Information', icon: 'person-outline', onPress: () => Alert.alert('Profile', 'Edit your profile information') },
-				{ label: 'Payment Methods', icon: 'card-outline', onPress: () => Alert.alert('Payment', 'Manage payment methods') },
-				{ label: 'Order History', icon: 'receipt-outline', onPress: () => Alert.alert('Orders', 'View your order history') },
-				{ label: 'Saved Addresses', icon: 'location-outline', onPress: () => Alert.alert('Addresses', 'Manage saved addresses') },
+				{ label: 'Profile Information', icon: 'person-outline', onPress: () => navigation.navigate('EditProfile') },
+				{ label: 'Payment Methods', icon: 'card-outline', onPress: () => navigation.navigate('PaymentMethods') },
+				{ label: 'Order History', icon: 'receipt-outline', onPress: () => navigation.navigate('OrderHistory') },
+				{ label: 'Saved Addresses', icon: 'location-outline', onPress: () => Alert.alert('Saved Addresses', 'Address management coming soon') },
 			],
 		},
 		{
@@ -42,18 +54,18 @@ export default function AccountScreen(): React.ReactElement {
 					value: themeMode === 'system' ? `System (${actualScheme === 'dark' ? 'Dark' : 'Light'})` : themeMode.charAt(0).toUpperCase() + themeMode.slice(1),
 					onPress: () => setShowThemeModal(true)
 				},
-				{ label: 'Notifications', icon: 'notifications-outline', onPress: () => Alert.alert('Notifications', 'Manage notification settings') },
-				{ label: 'Language', icon: 'language-outline', value: 'English', onPress: () => Alert.alert('Language', 'Select your language') },
-				{ label: 'Privacy', icon: 'shield-checkmark-outline', onPress: () => Alert.alert('Privacy', 'Privacy settings') },
+				{ label: 'Notifications', icon: 'notifications-outline', onPress: () => navigation.navigate('Notifications') },
+				{ label: 'Language', icon: 'language-outline', value: language === 'en' ? 'English' : 'ភាសាខ្មែរ', onPress: () => navigation.navigate('Language') },
+				{ label: 'Privacy', icon: 'shield-checkmark-outline', onPress: () => navigation.navigate('Privacy') },
 			],
 		},
 		{
 			title: 'Support',
 			items: [
-				{ label: 'Help Center', icon: 'help-circle-outline', onPress: () => Alert.alert('Help', 'Visit our help center') },
-				{ label: 'Contact Support', icon: 'chatbubble-outline', onPress: () => Alert.alert('Support', 'Contact our support team') },
-				{ label: 'Terms & Conditions', icon: 'document-text-outline', onPress: () => Alert.alert('Terms', 'View terms and conditions') },
-				{ label: 'About', icon: 'information-circle-outline', onPress: () => Alert.alert('About', 'Concert Tickets App v1.0.0') },
+				{ label: 'Help Center', icon: 'help-circle-outline', onPress: () => Alert.alert('Help Center', 'Visit support.proget.com for assistance') },
+				{ label: 'Contact Support', icon: 'chatbubble-outline', onPress: () => Alert.alert('Contact Support', 'Email: support@proget.com\nPhone: +1 (800) 123-4567') },
+				{ label: 'Terms & Conditions', icon: 'document-text-outline', onPress: () => Alert.alert('Terms', 'View at proget.com/terms') },
+				{ label: 'About', icon: 'information-circle-outline', onPress: () => Alert.alert('About', 'ProGet - Concert Tickets\nVersion 1.0.0\n\n© 2025 ProGet Inc.') },
 			],
 		},
 	];
@@ -133,24 +145,30 @@ export default function AccountScreen(): React.ReactElement {
 				</View>
 			))}
 
-			{/* Logout Button */}
-			<TouchableOpacity
-				activeOpacity={0.8}
-				onPress={() => {
-					Alert.alert(
-						'Logout',
-						'Are you sure you want to logout?',
-						[
-							{ text: 'Cancel', style: 'cancel' },
-							{ text: 'Logout', style: 'destructive', onPress: () => Alert.alert('Logged Out', 'You have been logged out') },
-						]
-					);
-				}}
-				style={[styles.logoutButton, { backgroundColor: theme.card, borderColor: '#ef4444' }]}
-			>
-				<Ionicons name="log-out-outline" size={20} color="#ef4444" />
-				<Text style={[styles.logoutText, { color: '#ef4444' }]}>Logout</Text>
-			</TouchableOpacity>
+		{/* Logout Button */}
+		<TouchableOpacity
+			activeOpacity={0.8}
+			onPress={() => {
+				Alert.alert(
+					'Logout',
+					'Are you sure you want to logout?',
+					[
+						{ text: 'Cancel', style: 'cancel' },
+						{ 
+							text: 'Logout', 
+							style: 'destructive', 
+							onPress: async () => {
+								await logout();
+							}
+						},
+					]
+				);
+			}}
+			style={[styles.logoutButton, { backgroundColor: theme.card, borderColor: '#ef4444' }]}
+		>
+			<Ionicons name="log-out-outline" size={20} color="#ef4444" />
+			<Text style={[styles.logoutText, { color: '#ef4444' }]}>Logout</Text>
+		</TouchableOpacity>
 
 			<View style={{ height: 24 }} />
 

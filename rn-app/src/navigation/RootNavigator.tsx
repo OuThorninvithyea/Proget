@@ -12,10 +12,22 @@ import TransferTicketScreen from "../screens/TransferTicketScreen";
 import TicketMarketplaceScreen from "../screens/TicketMarketplaceScreen";
 import CreateListingScreen from "../screens/CreateListingScreen";
 import ListingDetailScreen from "../screens/ListingDetailScreen";
+import EditProfileScreen from "../screens/EditProfileScreen";
+import PaymentMethodsScreen from "../screens/PaymentMethodsScreen";
+import OrderHistoryScreen from "../screens/OrderHistoryScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
+import LanguageScreen from "../screens/LanguageScreen";
+import PrivacyScreen from "../screens/PrivacyScreen";
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeProvider";
+import { useAuth } from "../contexts/AuthContext";
+import { ActivityIndicator, View } from "react-native";
 
 export type RootStackParamList = {
+  Login: undefined;
+  Register: undefined;
   HomeTabs: undefined;
   EventDetail: { eventId: string };
   SeatSelection: { eventId: string };
@@ -26,6 +38,12 @@ export type RootStackParamList = {
   CreateListing: undefined;
   ListingDetail: { listingId: string };
   ProposeTrade: { listingId: string };
+  EditProfile: undefined;
+  PaymentMethods: undefined;
+  OrderHistory: undefined;
+  Notifications: undefined;
+  Language: undefined;
+  Privacy: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -86,6 +104,17 @@ function Tabs(): React.ReactElement {
 
 export default function RootNavigator(): React.ReactElement {
   const { theme } = useTheme();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Show loading screen while checking auth
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}>
+        <ActivityIndicator size="large" color={theme.accent} />
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -94,11 +123,28 @@ export default function RootNavigator(): React.ReactElement {
         contentStyle: { backgroundColor: theme.bg },
       }}
     >
-      <Stack.Screen
-        name="HomeTabs"
-        component={Tabs}
-        options={{ headerShown: false }}
-      />
+      {!isAuthenticated ? (
+        // Auth Stack - Show Login/Register screens when not authenticated
+        <>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{ headerShown: false }}
+          />
+        </>
+      ) : (
+        // App Stack - Show main app when authenticated
+        <>
+          <Stack.Screen
+            name="HomeTabs"
+            component={Tabs}
+            options={{ headerShown: false }}
+          />
       <Stack.Screen
         name="EventDetail"
         component={EventDetailScreen}
@@ -134,6 +180,38 @@ export default function RootNavigator(): React.ReactElement {
         component={ListingDetailScreen}
         options={{ title: "Listing Details" }}
       />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{ title: "Edit Profile" }}
+      />
+      <Stack.Screen
+        name="PaymentMethods"
+        component={PaymentMethodsScreen}
+        options={{ title: "Payment Methods" }}
+      />
+      <Stack.Screen
+        name="OrderHistory"
+        component={OrderHistoryScreen}
+        options={{ title: "Order History" }}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ title: "Notifications" }}
+      />
+      <Stack.Screen
+        name="Language"
+        component={LanguageScreen}
+        options={{ title: "Language" }}
+      />
+      <Stack.Screen
+        name="Privacy"
+        component={PrivacyScreen}
+        options={{ title: "Privacy & Security" }}
+      />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

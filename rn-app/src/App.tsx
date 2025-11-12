@@ -3,6 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import RootNavigator from './navigation/RootNavigator';
 import { ThemeProvider, useTheme } from './theme/ThemeProvider';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 function AppShell(): JSX.Element {
 	const { theme, fontsLoaded } = useTheme();
@@ -17,9 +19,13 @@ function AppShell(): JSX.Element {
 
 export default function App(): JSX.Element {
 	return (
-		<ThemeProvider>
-			<AppShell />
-		</ThemeProvider>
+		<AuthProvider>
+			<LanguageProvider>
+				<ThemeProvider>
+					<AppShell />
+				</ThemeProvider>
+			</LanguageProvider>
+		</AuthProvider>
 	);
 }
 
