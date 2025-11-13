@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema(
   {
@@ -54,6 +55,55 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Saved Addresses
+    addresses: [
+      {
+        label: {
+          type: String,
+          enum: ["home", "work", "other"],
+          default: "home",
+        },
+        fullName: {
+          type: String,
+          required: true,
+        },
+        phoneNumber: {
+          type: String,
+          required: true,
+        },
+        addressLine1: {
+          type: String,
+          required: true,
+        },
+        addressLine2: {
+          type: String,
+        },
+        city: {
+          type: String,
+          required: true,
+        },
+        state: {
+          type: String,
+          required: true,
+        },
+        zipCode: {
+          type: String,
+          required: true,
+        },
+        country: {
+          type: String,
+          default: "USA",
+        },
+        isDefault: {
+          type: Boolean,
+          default: false,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     // Privacy Settings
     privacySettings: {
       dataCollection: { type: Boolean, default: true },
@@ -76,6 +126,15 @@ const userSchema = new mongoose.Schema(
       promotions: { type: Boolean, default: false },
       newsUpdates: { type: Boolean, default: false },
     },
+    // Password Reset
+    resetPasswordToken: {
+      type: String,
+      select: false,
+    },
+    resetPasswordExpire: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -94,6 +153,28 @@ userSchema.pre("save", async function (next) {
 // Compare password method
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generate password reset token
+userSchema.methods.getResetPasswordToken = function () {
+  // Generate token
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Set expire time (10 minutes)
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
+
+// Verify reset token is still valid
+userSchema.methods.isResetTokenValid = function () {
+  return this.resetPasswordExpire && this.resetPasswordExpire > Date.now();
 };
 
 module.exports = mongoose.model("User", userSchema);

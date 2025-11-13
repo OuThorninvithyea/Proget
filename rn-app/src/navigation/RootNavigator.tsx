@@ -20,6 +20,9 @@ import LanguageScreen from "../screens/LanguageScreen";
 import PrivacyScreen from "../screens/PrivacyScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import SavedAddressesScreen from "../screens/SavedAddressesScreen";
+import AddEditAddressScreen from "../screens/AddEditAddressScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeProvider";
 import { useAuth } from "../contexts/AuthContext";
@@ -28,6 +31,7 @@ import { ActivityIndicator, View } from "react-native";
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
   HomeTabs: undefined;
   EventDetail: { eventId: string };
   SeatSelection: { eventId: string };
@@ -44,6 +48,8 @@ export type RootStackParamList = {
   Notifications: undefined;
   Language: undefined;
   Privacy: undefined;
+  SavedAddresses: undefined;
+  AddEditAddress: { address?: any; userId?: string };
 };
 
 const Tab = createBottomTabNavigator();
@@ -75,7 +81,7 @@ function Tabs(): React.ReactElement {
         name="My Tickets"
         component={MyTicketsScreen}
         options={{
-          tabBarIcon: ({ color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Ionicons name="ticket-outline" color={color} size={size} />
           ),
         }}
@@ -109,7 +115,14 @@ export default function RootNavigator(): React.ReactElement {
   // Show loading screen while checking auth
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.bg }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.bg,
+        }}
+      >
         <ActivityIndicator size="large" color={theme.accent} />
       </View>
     );
@@ -124,7 +137,7 @@ export default function RootNavigator(): React.ReactElement {
       }}
     >
       {!isAuthenticated ? (
-        // Auth Stack - Show Login/Register screens when not authenticated
+        // Auth Stack - Show Login/Register/ForgotPassword screens when not authenticated
         <>
           <Stack.Screen
             name="Login"
@@ -136,6 +149,11 @@ export default function RootNavigator(): React.ReactElement {
             component={RegisterScreen}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+            options={{ headerShown: false }}
+          />
         </>
       ) : (
         // App Stack - Show main app when authenticated
@@ -145,71 +163,83 @@ export default function RootNavigator(): React.ReactElement {
             component={Tabs}
             options={{ headerShown: false }}
           />
-      <Stack.Screen
-        name="EventDetail"
-        component={EventDetailScreen}
-        options={{ title: "Event" }}
-      />
-      <Stack.Screen
-        name="SeatSelection"
-        component={SeatSelectionScreen}
-        options={{ title: "Select Seats" }}
-      />
-      <Stack.Screen
-        name="Checkout"
-        component={CheckoutScreen}
-        options={{ title: "Checkout" }}
-      />
-      <Stack.Screen
-        name="TicketDetail"
-        component={TicketDetailScreen}
-        options={{ title: "My Ticket" }}
-      />
-      <Stack.Screen
-        name="TransferTicket"
-        component={TransferTicketScreen}
-        options={{ title: "Transfer Ticket" }}
-      />
-      <Stack.Screen
-        name="CreateListing"
-        component={CreateListingScreen}
-        options={{ title: "Create Listing" }}
-      />
-      <Stack.Screen
-        name="ListingDetail"
-        component={ListingDetailScreen}
-        options={{ title: "Listing Details" }}
-      />
-      <Stack.Screen
-        name="EditProfile"
-        component={EditProfileScreen}
-        options={{ title: "Edit Profile" }}
-      />
-      <Stack.Screen
-        name="PaymentMethods"
-        component={PaymentMethodsScreen}
-        options={{ title: "Payment Methods" }}
-      />
-      <Stack.Screen
-        name="OrderHistory"
-        component={OrderHistoryScreen}
-        options={{ title: "Order History" }}
-      />
-      <Stack.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={{ title: "Notifications" }}
-      />
-      <Stack.Screen
-        name="Language"
-        component={LanguageScreen}
-        options={{ title: "Language" }}
-      />
-      <Stack.Screen
-        name="Privacy"
-        component={PrivacyScreen}
-        options={{ title: "Privacy & Security" }}
-      />
+          <Stack.Screen
+            name="EventDetail"
+            component={EventDetailScreen}
+            options={{ title: "Event" }}
+          />
+          <Stack.Screen
+            name="SeatSelection"
+            component={SeatSelectionScreen}
+            options={{ title: "Select Seats" }}
+          />
+          <Stack.Screen
+            name="Checkout"
+            component={CheckoutScreen}
+            options={{ title: "Checkout" }}
+          />
+          <Stack.Screen
+            name="TicketDetail"
+            component={TicketDetailScreen}
+            options={{ title: "My Ticket" }}
+          />
+          <Stack.Screen
+            name="TransferTicket"
+            component={TransferTicketScreen}
+            options={{ title: "Transfer Ticket" }}
+          />
+          <Stack.Screen
+            name="CreateListing"
+            component={CreateListingScreen}
+            options={{ title: "Create Listing" }}
+          />
+          <Stack.Screen
+            name="ListingDetail"
+            component={ListingDetailScreen}
+            options={{ title: "Listing Details" }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
+            options={{ title: "Edit Profile" }}
+          />
+          <Stack.Screen
+            name="PaymentMethods"
+            component={PaymentMethodsScreen}
+            options={{ title: "Payment Methods" }}
+          />
+          <Stack.Screen
+            name="OrderHistory"
+            component={OrderHistoryScreen}
+            options={{ title: "Order History" }}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={{ title: "Notifications" }}
+          />
+          <Stack.Screen
+            name="Language"
+            component={LanguageScreen}
+            options={{ title: "Language" }}
+          />
+          <Stack.Screen
+            name="Privacy"
+            component={PrivacyScreen}
+            options={{ title: "Privacy & Security" }}
+          />
+          <Stack.Screen
+            name="SavedAddresses"
+            component={SavedAddressesScreen}
+            options={{ title: "Saved Addresses" }}
+          />
+          <Stack.Screen
+            name="AddEditAddress"
+            component={AddEditAddressScreen}
+            options={({ route }) => ({
+              title: route.params?.address ? "Edit Address" : "Add Address",
+            })}
+          />
         </>
       )}
     </Stack.Navigator>

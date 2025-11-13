@@ -1,9 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('./config/database');
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./config/database");
 
 // Load environment variables
-require('dotenv').config();
+require("dotenv").config();
 
 // Initialize app
 const app = express();
@@ -17,35 +17,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/events', require('./routes/events'));
-app.use('/api/tickets', require('./routes/tickets'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/listings', require('./routes/listings'));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/users", require("./routes/users"));
+app.use("/api/events", require("./routes/events"));
+app.use("/api/tickets", require("./routes/tickets"));
+app.use("/api/orders", require("./routes/orders"));
+app.use("/api/listings", require("./routes/listings"));
+app.use("/api/addresses", require("./routes/addresses"));
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'ProGet API is running',
+    message: "ProGet API is running",
     timestamp: new Date().toISOString(),
   });
 });
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: 'Welcome to ProGet API',
-    version: '1.0.0',
+    message: "Welcome to ProGet API",
+    version: "1.0.0",
     endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      events: '/api/events',
-      tickets: '/api/tickets',
-      orders: '/api/orders',
-      listings: '/api/listings',
+      health: "/api/health",
+      auth: "/api/auth",
+      users: "/api/users",
+      events: "/api/events",
+      tickets: "/api/tickets",
+      orders: "/api/orders",
+      listings: "/api/listings",
     },
   });
 });
@@ -55,8 +56,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
@@ -64,7 +65,7 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
+    message: "Route not found",
   });
 });
 
@@ -75,4 +76,3 @@ app.listen(PORT, () => {
   console.log(`📍 http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health\n`);
 });
-
